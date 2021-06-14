@@ -35,7 +35,11 @@ function getFeedUpdates() {
     // Send message to Slack
     sendChatMessage(message, slackSettings);
     // Send message to Discord
-    sendChatMessage(message, discordSettings);
+    const discordMessageMaxSize = 2000;
+    sendChatMessage(
+      message.substring(0, discordMessageMaxSize),
+      discordSettings
+    );
   }
 }
 
