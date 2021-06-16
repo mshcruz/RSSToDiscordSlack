@@ -49,16 +49,6 @@ function getFeedUpdates() {
  * @returns {Object[]} New items retrieved from the feed.
  */
 function parseRSSFeed(feedUrl) {
-  // Get date and time of previous run
-  const lastRunDate =
-    PropertiesService.getScriptProperties().getProperty('LAST_RUN_DATE') || 0;
-  // Update last run date and time to now
-  PropertiesService.getScriptProperties().setProperty(
-    'LAST_RUN_DATE',
-    new Date().getTime()
-  );
-  // Initialize an array to store new feed items
-  const items = [];
   // Make a request to fetch the feed items
   const response = UrlFetchApp.fetch(feedUrl).getContentText();
   // Parse the request's response into an XML document object
@@ -69,15 +59,27 @@ function parseRSSFeed(feedUrl) {
     .getChild('channel')
     .getChildren('item')
     .reverse();
+
+  // Get date and time of previous run
+  const lastRunTime =
+    PropertiesService.getScriptProperties().getProperty('LAST_RUN_TIME') || 0;
+  // Update last run date and time to now
+  PropertiesService.getScriptProperties().setProperty(
+    'LAST_RUN_TIME',
+    new Date().getTime()
+  );
+
+  // Initialize an array to store new feed items
+  const items = [];
   //Iterate through retrieved items
   for (const element of elements) {
     // Get the posting date and time of an item
-    const postingDate = new Date(element.getChild('pubDate').getText());
+    const publicationTime = new Date(element.getChild('pubDate').getText());
     // Only process items posted more recently than the previous run time
-    if (postingDate.getTime() > lastRunDate) {
+    if (publicationTime.getTime() > lastRunTime) {
       // Format the item's posting time
       const date = Utilities.formatDate(
-        postingDate,
+        publicationTime,
         Session.getScriptTimeZone(),
         'YYYY-MM-dd HH:mm:ss'
       );
