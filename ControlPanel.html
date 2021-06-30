@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <base target="_top" />
+</head>
+
+<body>
+  <div class="jumbotron text-center">
+    <h1>Upwork Feed to Slack and Discord</h1>
+    <p>www.mshcruz.com</p>
+  </div>
+  <div class="container">
+
+    <form onsubmit="submitForm(this)">
+      <h2>Settings</h2>
+      <hr />
+      <div class="form-group">
+        <label for="feedUrl">RSS Feed URL</label>
+        <input type="text" class="form-control" id="feedUrl" name="feedUrl" value="<?= feedUrl ?>" data-toggle="tooltip"
+          data-placement="top" title="URL to the RSS feed to be monitored." required />
+      </div>
+
+      <div class="form-group">
+        <label for="slackWebhookUrl">Slack Webhook URL</label>
+        <input type="text" class="form-control" id="slackWebhookUrl" name="slackWebhookUrl"
+          value="<?= slackWebhookUrl ?>" data-toggle="tooltip" data-placement="top"
+          title="URL of a webhook to post to a Slack channel." required />
+      </div>
+
+      <div class="form-group">
+        <label for="discordWebhookUrl">Discord Webhook URL</label>
+        <input type="text" class="form-control" id="discordWebhookUrl" name="discordWebhookUrl"
+          value="<?= discordWebhookUrl ?>" data-toggle="tooltip" data-placement="top"
+          title="URL of a webhook to post to a Discord channel." required />
+      </div>
+
+      <div class="form-group">
+        <button type="submit" id="save" class="btn btn-primary">Save</button>
+      </div>
+    </form>
+
+    <div class="spinner-border text-primary d-none" role="status" id="loadingIndicator"></div>
+    <div class="alert d-none" id="settingsSavedStatus"></div>
+
+  </div>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
+  <script>
+    // Based on https://developers.google.com/apps-script/guides/html/communication#index.html_4
+    function preventFormSubmit() {
+      var forms = document.querySelectorAll("form");
+      for (var i = 0; i < forms.length; i++) {
+        forms[i].addEventListener("submit", function (event) {
+          event.preventDefault();
+        });
+      }
+    }
+    window.addEventListener("load", preventFormSubmit);
+
+    function submitForm(form) {
+      $("#save").prop("disabled", true);
+      $("#save").html(
+        '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>'
+      );
+
+      google.script.run
+        .withSuccessHandler(onSuccess)
+        .withFailureHandler(onFailure)
+        .saveSettings(form);
+    }
+
+    function onSuccess() {
+      $("#settingsSavedStatus").html(
+        "<strong>Sucess!</strong> Settings successfully saved."
+      );
+      $("#settingsSavedStatus").addClass("alert-info");
+      $("#settingsSavedStatus").removeClass("d-none");
+      $("#save").prop("disabled", false);
+      $("#save").html("Save");
+    }
+
+    function onFailure(error) {
+      $("#settingsSavedStatus").addClass("alert-danger");
+      $("#settingsSavedStatus").html(
+        `<strong>${error.message}</strong>`
+      );
+      $("#settingsSavedStatus").removeClass("d-none");
+      $("#save").prop("disabled", false);
+      $("#save").html("Save");
+    }
+  </script>
+</body>
+
+</html>

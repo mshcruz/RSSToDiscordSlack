@@ -7,18 +7,23 @@
  * Get updates from the specified RSS feed and send new items as a message on Slack and on Discord.
  */
 function getFeedUpdates() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  const slackWebhookUrl = scriptProperties.getProperty('SLACK_WEBHOOK_URL');
+  const discordWebhookUrl = scriptProperties.getProperties(
+    'DISCORD_WEBHOOK_URL'
+  );
+  const feedUrl = scriptProperties.getProperties('FEED_URL');
+
   // Parameters used for sending messages to Slack
   const slackSettings = {
-    url: 'https://hooks.slack.com/services/ABC123',
+    url: slackWebhookUrl,
     bodyPropertyName: 'text',
   };
   // Parameters used for sending messages to Discord
   const discordSettings = {
-    url: 'https://discord.com/api/webhooks/XYZ456',
+    url: discordWebhookUrl,
     bodyPropertyName: 'content',
   };
-  // URL of the RSS feed
-  const feedUrl = 'https://www.website.com/feed/rss?q=my+keywords';
   // Get new feed items
   const items = parseRSSFeed(feedUrl);
   // Iterate through the retrieved new items
@@ -128,4 +133,37 @@ function sendChatMessage(message, settings) {
   };
   // Send the message via a POST request
   UrlFetchApp.fetch(settings.url, params);
+}
+
+/**
+ * Shows the settings page for users to configurate the application.
+ * @returns {GoogleAppsScript.HTML.HtmlOutput} The settings page.
+ */
+function doGet() {
+  const scriptProperties = PropertiesService.getScriptProperties();
+  let template = HtmlService.createTemplateFromFile('ControlPanel');
+  template.feedUrl =
+    scriptProperties.getProperty('FEED_URL') ||
+    'https://www.website.com/feed/rss?q=my+keywords';
+  template.slackWebhookUrl =
+    scriptProperties.getProperty('SLACK_WEBHOOK_URL') ||
+    'https://hooks.slack.com/services/ABC123';
+  template.discordWebhookUrl =
+    scriptProperties.getProperty('DISCORD_WEBHOOK_URL') ||
+    'https://discord.com/api/webhooks/XYZ456';
+  template = template.evaluate();
+  return template;
+}
+
+/**
+ * Saves settings to script properties.
+ * @param {Object} form The form submitted by the user.
+ */
+function saveSettings(form) {
+  const settings = {
+    FEED_URL: form.feedUrl,
+    SLACK_WEBHOOK_URL: form.slackWebhookUrl,
+    DISCORD_WEBHOOK_URL: form.discordWebhookUrl,
+  };
+  PropertiesService.getScriptProperties().setProperties(settings);
 }
