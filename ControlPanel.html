@@ -73,13 +73,11 @@
     }
 
     function onSuccess() {
+      $("#settingsSavedStatus").addClass("alert-info");
       $("#settingsSavedStatus").html(
         "<strong>Sucess!</strong> Settings successfully saved."
       );
-      $("#settingsSavedStatus").addClass("alert-info");
-      $("#settingsSavedStatus").removeClass("d-none");
-      $("#save").prop("disabled", false);
-      $("#save").html("Save");
+      enableButton()
     }
 
     function onFailure(error) {
@@ -87,6 +85,10 @@
       $("#settingsSavedStatus").html(
         `<strong>${error.message}</strong>`
       );
+      enableButton();
+    }
+
+    function enableButton() {
       $("#settingsSavedStatus").removeClass("d-none");
       $("#save").prop("disabled", false);
       $("#save").html("Save");
