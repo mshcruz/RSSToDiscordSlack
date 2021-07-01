@@ -7,13 +7,15 @@
  * Get updates from the specified RSS feed and send new items as a message on Slack and on Discord.
  */
 function getFeedUpdates() {
+  // Get URLs from script properties
   const scriptProperties = PropertiesService.getScriptProperties();
-  const slackWebhookUrl = scriptProperties.getProperty('SLACK_WEBHOOK_URL');
-  const discordWebhookUrl = scriptProperties.getProperties(
+  const slackWebhookUrl = scriptProperties.getProperty(
+    'SLACK_WEBHOOK_URL'
+  );
+  const discordWebhookUrl = scriptProperties.getProperty(
     'DISCORD_WEBHOOK_URL'
   );
-  const feedUrl = scriptProperties.getProperties('FEED_URL');
-
+  const feedUrl = scriptProperties.getProperty('FEED_URL');
   // Parameters used for sending messages to Slack
   const slackSettings = {
     url: slackWebhookUrl,
@@ -67,7 +69,9 @@ function parseRSSFeed(feedUrl) {
 
   // Get date and time of previous run
   const lastRunTime =
-    PropertiesService.getScriptProperties().getProperty('LAST_RUN_TIME') || 0;
+    PropertiesService.getScriptProperties().getProperty(
+      'LAST_RUN_TIME'
+    ) || 0;
   // Update last run date and time to now
   PropertiesService.getScriptProperties().setProperty(
     'LAST_RUN_TIME',
@@ -79,7 +83,9 @@ function parseRSSFeed(feedUrl) {
   //Iterate through retrieved items
   for (const element of elements) {
     // Get the posting date and time of an item
-    const publicationTime = new Date(element.getChild('pubDate').getText());
+    const publicationTime = new Date(
+      element.getChild('pubDate').getText()
+    );
     // Only process items posted more recently than the previous run time
     if (publicationTime.getTime() > lastRunTime) {
       // Format the item's posting time
@@ -131,8 +137,12 @@ function sendChatMessage(message, settings) {
     method: 'post',
     payload: JSON.stringify(body),
   };
-  // Send the message via a POST request
-  UrlFetchApp.fetch(settings.url, params);
+  // Send the message via a POST request and catch request errors individually
+  try {
+    UrlFetchApp.fetch(settings.url, params);
+  } catch (error) {
+    console.error(`Error sending message: ${error.message}`);
+  }
 }
 
 /**
@@ -151,7 +161,9 @@ function doGet() {
   template.discordWebhookUrl =
     scriptProperties.getProperty('DISCORD_WEBHOOK_URL') ||
     'https://discord.com/api/webhooks/XYZ456';
-  template = template.evaluate();
+  template = template
+    .evaluate()
+    .setTitle('Upwork Feed to Slack and Discord - mshcruz.com');
   return template;
 }
 
